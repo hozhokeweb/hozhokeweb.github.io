@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hozhoke</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1a18;
+    --muted: #6b6b66;
+    --faint: #d4d3cc;
+    --bg: #f7f6f1;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'EB Garamond', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    min-height: 100vh;
+    padding: 0 clamp(1.5rem, 5vw, 4rem);
+  }
+
+  main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 88vh;
+    max-width: 620px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .wordmark {
+    font-family: 'DM Mono', monospace;
+    font-weight: 300;
+    font-size: 0.82rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: clamp(2.5rem, 7vh, 5rem);
+  }
+
+  .body-text {
+    font-size: clamp(1rem, 1.8vw, 1.12rem);
+    line-height: 1.8;
+    color: var(--muted);
+    max-width: 500px;
+  }
+
+  .body-text p { margin-bottom: 1em; }
+  .body-text p:last-child { margin-bottom: 0; }
+  .name-note { font-style: italic; }
+
+  .rule {
+    width: 2rem;
+    height: 1px;
+    background: var(--faint);
+    margin: 2.5rem 0;
+  }
+
+  .signup-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.85rem;
+  }
+
+  .signup-row {
+    display: flex;
+    align-items: stretch;
+    max-width: 380px;
+    border: 1px solid var(--faint);
+    border-radius: 2px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .signup-row:focus-within { border-color: #a0a099; }
+
+  .signup-row input[type="email"] {
+    flex: 1;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0.65rem 0.85rem;
+  }
+
+  .signup-row input[type="email"]::placeholder { color: var(--faint); }
+
+  .signup-row button {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    border-left: 1px solid var(--faint);
+    padding: 0.65rem 1rem;
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s;
+    white-space: nowrap;
+  }
+
+  .signup-row button:hover { color: var(--ink); background: rgba(0,0,0,0.03); }
+  .signup-row button:disabled { opacity: 0.4; cursor: default; }
+
+  .signup-confirm {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    display: none;
+    padding: 0.65rem 0;
+  }
+
+  .signup-error {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: #b07070;
+    display: none;
+    padding: 0.5rem 0 0;
+  }
+
+  footer {
+    max-width: 620px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 1.5rem 0 2rem;
+    border-top: 1px solid var(--faint);
+  }
+
+  .footer-mark {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    color: var(--faint);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .wordmark     { animation: fadeUp 0.6s ease both; animation-delay: 0.1s;  opacity: 0; }
+  .body-text    { animation: fadeUp 0.7s ease both; animation-delay: 0.25s; opacity: 0; }
+  .rule         { animation: fadeUp 0.5s ease both; animation-delay: 0.4s;  opacity: 0; }
+  .signup-label { animation: fadeUp 0.5s ease both; animation-delay: 0.5s;  opacity: 0; }
+  .signup-row   { animation: fadeUp 0.5s ease both; animation-delay: 0.55s; opacity: 0; }
+  footer        { animation: fadeUp 0.5s ease both; animation-delay: 0.65s; opacity: 0; }
+</style>
+</head>
+<body>
+
+<main>
+  <div class="wordmark">Hozhoke</div>
+
+  <div class="body-text">
+    <p>Artificial intelligence is becoming part of the fabric of everyday systems. We believe how it is built matters.</p>
+    <p>We are quietly working on new approaches.</p>
+    <p class="name-note">The name Hozhoke is inspired by the idea that technology should exist in balance with people and the world.</p>
+    <p>More to come.</p>
+  </div>
+
+  <div class="rule"></div>
+
+  <p class="signup-label" id="signup-label">Stay informed &mdash; leave your email and we will be in touch.</p>
+  <div class="signup-row" id="signup-row">
+    <input type="email" id="email-input" placeholder="you@example.com" autocomplete="email" />
+    <button id="submit-btn" onclick="handleSignup()">Notify me</button>
+  </div>
+  <p class="signup-error" id="signup-error"></p>
+  <p class="signup-confirm" id="signup-confirm">Thank you. We will reach out when there is something to share.</p>
+</main>
+
+<footer>
+  <span class="footer-mark">&copy; 2026 Hozhoke</span>
+</footer>
+
+<script>
+  // ── PASTE YOUR FORMSPREE ENDPOINT HERE ──────────────────────────────────────
+  var FORMSPREE_URL = 'https://formspree.io/f/mlgploky';
+  // ────────────────────────────────────────────────────────────────────────────
+
+  async function handleSignup() {
+    var input  = document.getElementById('email-input');
+    var btn    = document.getElementById('submit-btn');
+    var row    = document.getElementById('signup-row');
+    var label  = document.getElementById('signup-label');
+    var error  = document.getElementById('signup-error');
+    var confirm = document.getElementById('signup-confirm');
+
+    var email = input.value.trim();
+    error.style.display = 'none';
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      input.style.color = '#b07070';
+      input.focus();
+      setTimeout(function() { input.style.color = ''; }, 1200);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    try {
+      var res = await fetch(FORMSPREE_URL, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+      });
+
+      if (res.ok) {
+        row.style.display = 'none';
+        label.style.display = 'none';
+        confirm.style.display = 'block';
+      } else {
+        throw new Error('submission failed');
+      }
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = 'Notify me';
+      error.textContent = 'Something went wrong. Please try again.';
+      error.style.display = 'block';
+    }
+  }
+
+  document.getElementById('email-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') handleSignup();
+  });
+</script>
+</body>
+</html>
