@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The future-offset average in TriAttention can be precomputed &middot; Hozhoke</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<!-- MathJax (CDN). Fine for a served page; the only external dependency. -->
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script" async></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1a18;
+    --muted: #57574f;
+    --faint: #d4d3cc;
+    --bg: #f7f6f1;
+    --accent: #3f6f52;   /* the green of W_f in Figure 2 */
+  }
+
+  html { -webkit-font-smoothing: antialiased; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'EB Garamond', Georgia, serif;
+    line-height: 1.7;
+    font-size: clamp(1.05rem, 1.9vw, 1.2rem);
+    padding: 0 clamp(1.4rem, 5vw, 3rem);
+  }
+
+  .wrap { max-width: 680px; margin: 0 auto; }
+
+  header { padding: clamp(3rem, 9vh, 6rem) 0 2.5rem; }
+
+  .wordmark {
+    font-family: 'DM Mono', monospace;
+    font-weight: 300;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: clamp(2rem, 6vh, 3.5rem);
+  }
+  .wordmark:hover { color: var(--ink); }
+
+  h1 {
+    font-weight: 600;
+    font-size: clamp(1.7rem, 4.5vw, 2.4rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin-bottom: 1rem;
+  }
+
+  .byline {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  .byline a { color: var(--muted); }
+
+  .lede {
+    font-size: clamp(1.15rem, 2.2vw, 1.35rem);
+    line-height: 1.6;
+    color: var(--muted);
+    margin: 1.8rem 0 0;
+    font-style: italic;
+  }
+
+  h2 {
+    font-weight: 600;
+    font-size: clamp(1.25rem, 3vw, 1.55rem);
+    letter-spacing: -0.005em;
+    margin: 2.8rem 0 0.9rem;
+  }
+
+  p { margin: 0 0 1.15rem; }
+
+  a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+  a:hover { color: var(--ink); }
+
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+
+  code, .mono {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.86em;
+    background: rgba(0,0,0,0.035);
+    padding: 0.05em 0.35em;
+    border-radius: 2px;
+  }
+
+  figure { margin: 2rem 0; }
+  figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 3px;
+  }
+  figcaption {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--muted);
+    margin-top: 0.8rem;
+    padding: 0 0.2rem;
+  }
+  figcaption .lab { font-weight: 600; color: var(--ink); }
+
+  .rule { width: 2.5rem; height: 1px; background: var(--faint); margin: 3rem 0; }
+
+  blockquote {
+    border-left: 2px solid var(--faint);
+    padding-left: 1.1rem;
+    margin: 1.4rem 0;
+    color: var(--muted);
+  }
+
+  .callout {
+    background: rgba(63,111,82,0.06);
+    border: 1px solid rgba(63,111,82,0.18);
+    border-radius: 4px;
+    padding: 1.1rem 1.3rem;
+    margin: 1.8rem 0;
+    font-size: 0.98em;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+
+  .paper-link {
+    display: block;
+    border: 1px solid var(--faint);
+    border-radius: 4px;
+    padding: 1.1rem 1.3rem;
+    margin: 2rem 0;
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .paper-link:hover { border-color: #a0a099; background: rgba(0,0,0,0.02); color: var(--ink); }
+  .paper-link .k {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+  .paper-link .t { font-weight: 600; font-size: 1.05rem; }
+  .paper-link .m { font-size: 0.9rem; color: var(--muted); margin-top: 0.2rem; }
+
+  footer {
+    border-top: 1px solid var(--faint);
+    margin-top: 3.5rem;
+    padding: 1.6rem 0 3rem;
+  }
+  .footer-mark {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    color: var(--faint);
+  }
+
+  mjx-container { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+  mjx-container[display="true"] { margin: 1.4rem 0 !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <a class="wordmark" href="https://hozhoke.com">Hozhoke</a>
+  <h1>The future-offset average in TriAttention can be precomputed</h1>
+  <div class="byline">Amarnath Mukherjee &middot; July 2026 &middot; <a href="#paper">full note (PDF)</a></div>
+  <p class="lede">A small, exact note on one step of a recent KV-cache method: the
+  average TriAttention takes over future distances need not be recomputed per key
+  &mdash; it folds, once and offline, into a single weight per frequency band.</p>
+</header>
+
+<p>Long-context language models keep a growing cache of past keys and values. To stay
+inside a memory budget, that cache has to be pruned, and <em>which</em> entries you
+evict matters: drop a key the model still needs and accuracy suffers.
+<a href="https://arxiv.org/abs/2604.04921">TriAttention</a> is a recent and rather
+elegant answer to that choice. When the cache must be trimmed, it scores each cached
+key by how much attention it is likely to receive, and keeps the highest-scoring ones.</p>
+
+<p>This note is about one small step inside that scoring. To capture a key's importance
+across the many distances at which it might later be read, TriAttention averages its
+score over a schedule of future offsets &mdash; in their implementation, the powers of
+two from $2^0$ to $2^{16}$. That particular schedule is a design choice, and
+nothing below depends on it. The point I'd like to make is that whatever the schedule,
+this average need not be recomputed for each key: it collapses, by a one-line identity,
+into a single weight per frequency band that you compute once, offline. After that,
+scoring a key is one evaluation rather than one per offset, and <em>not a single key
+changes rank</em>. It is a small result. But TriAttention is the kind of method we will
+see more of, and it is a clean example of a pattern worth naming: an average over a
+fixed schedule of rotations is often a precompute in disguise.</p>
+
+<h2>The score TriAttention computes</h2>
+
+<p>TriAttention rests on a striking empirical regularity. Measured <em>before</em> RoPE's
+position-dependent rotation is applied, a head's query and key vectors don't spread out
+&mdash; across Qwen3, Qwen2.5, and Llama3, they cluster tightly around a fixed, non-zero
+center that barely moves across positions or inputs (roughly 90% of heads). That matters
+asymmetrically. At pruning time a cached key is known exactly; the only unknown is the
+<em>future</em> query that will read it &mdash; and because queries concentrate, their
+calibrated center $\mathbb{E}[q_f]$ is a faithful stand-in for it. Pin the query to that
+center, and the only thing still varying in the attention logit is the rotation, i.e.
+the query&ndash;key distance $\Delta$.</p>
+
+<p>So TriAttention predicts the attention a key $k$ would receive at distance $\Delta$ as
+a score that splits into a distance-dependent trigonometric part and a norm correction:</p>
+
+$$ S(k,\Delta) = S_{\mathrm{trig}}(k,\Delta) + S_{\mathrm{norm}}(k). $$
+
+<p>The part we care about collects a contribution from each two-dimensional rotary band $f$:</p>
+
+$$ S_{\mathrm{trig}}(k,\Delta) = \sum_f \lVert \mathbb{E}[q_f]\rVert\,\lVert k_f\rVert\,
+   \cos(\omega_f \Delta + \varphi_f), $$
+
+<p>where $f \in \{0, \dots, d/2-1\}$ indexes the bands, $\omega_f = \theta^{-2f/d}$ is
+band $f$'s <em>angular</em> frequency (the rate at which that band's rotation turns,
+with rotary base $\theta = 10000$), and $\varphi_f = \arg\mathbb{E}[q_f] - \arg k_f$ is
+the angle between the query center and the key's band-$f$ component. The norm term
+$S_{\mathrm{norm}}(k)$ doesn't depend on $\Delta$; it plays no role here, so set it aside.</p>
+
+<h2>The same score, read as arrows in the plane</h2>
+
+<p>The rotation acts on two coordinates at a time, turning that pair by an angle. A pair
+of coordinates is a point in the plane, and a point in the plane is a complex number:
+an arrow with a length and an angle. If you did phasors once &mdash; three-phase circuits
+in a college EE class, say &mdash; this is the same picture. Read band $f$'s pre-rotation
+query and key as complex numbers $q_f, k_f \in \mathbb{C}$. Three small facts are all we need.</p>
+
+<figure>
+  <img src="notation-conjugate-and-phase.png"
+       alt="Three panels: a complex number as an arrow; its conjugate mirrored across the real axis; the product carrying the angle between query and key.">
+  <figcaption><span class="lab">Reading band $f$ as arrows.</span>
+  <span class="lab">(A)</span> $q_f$ and $k_f$ are arrows with a length and an angle.
+  <span class="lab">(B)</span> The conjugate $\overline{k_f}$ is $k_f$ mirrored across the
+  real axis: same length, opposite angle. <span class="lab">(C)</span> Because multiplying
+  complex numbers adds their angles, $q_f\,\overline{k_f}$ is one arrow carrying the gap
+  <em>between</em> query and key, $\arg q_f - \arg k_f$. Multiply further by
+  $e^{\,i\omega_f\Delta}$ to turn it by the distance angle; its real part is the cosine
+  term of the score.</figcaption>
+</figure>
+
+<ol style="margin: 0 0 1.15rem 1.3rem;">
+  <li style="margin-bottom:0.5rem;"><strong>The bar flips the angle.</strong> The conjugate
+  $\overline{k_f}$ is the mirror of $k_f$ across the real axis: same length, opposite angle.</li>
+  <li style="margin-bottom:0.5rem;"><strong>Multiplying adds angles.</strong> So
+  $q_f\,\overline{k_f}$ is a single arrow whose angle is the query&ndash;key gap
+  $\arg q_f - \arg k_f$ and whose length is $\lVert q_f\rVert\lVert k_f\rVert$; with the
+  center in the query's place, that gap is exactly $\varphi_f$.</li>
+  <li><strong>The position rotation is itself a multiplication.</strong> Turning band $f$
+  by the distance angle $\omega_f\Delta$ means multiplying by $e^{\,i\omega_f\Delta}$.</li>
+</ol>
+
+<p>Put the three together, with the score's center $\mathbb{E}[q_f]$ in the query's place.
+The arrow $\mathbb{E}[q_f]\,\overline{k_f}\,e^{\,i\omega_f\Delta}$ has length
+$\lVert\mathbb{E}[q_f]\rVert\lVert k_f\rVert$ and angle $\varphi_f + \omega_f\Delta$, and
+its real part is exactly one term of $S_{\mathrm{trig}}$. Summing over bands, the
+trigonometric score is the real part of a sum of arrows &mdash; the same complex form
+RoFormer gives the rotary dot product:</p>
+
+$$ S_{\mathrm{trig}}(k,\Delta) = \operatorname{Re}\Big\{ \sum_f \mathbb{E}[q_f]\,
+   \overline{k_f}\, e^{\,i\omega_f\Delta} \Big\}. $$
+
+<h2>The averaging step &mdash; the one we improve</h2>
+
+<p>A cached key might be queried soon, or much later. Its real importance is its importance
+across all those future distances, so TriAttention averages the score over a set of future
+offsets $D = \{1, 2, 4, \dots, 2^{16}\}$, spaced geometrically because attention changes
+fast at short distances and slowly at long ones:</p>
+
+$$ \tilde S(k) = \frac{1}{|D|} \sum_{\delta \in D} S(k, \Delta + \delta). $$
+
+<p>Done literally, this evaluates the whole band-sum once per offset, for every key, and averages
+&mdash; which is what the reference implementation does, materializing a
+[keys &times; offsets &times; bands] table of cosines and averaging over the offset axis.</p>
+
+<p>Now look at where the offset $\delta$ actually goes. In the phasor score it appears only
+inside the rotation, and because adding angles multiplies rotations, a turn by the shifted
+distance factors cleanly:</p>
+
+$$ e^{\,i\omega_f(\Delta + \delta)} =
+   \underbrace{e^{\,i\omega_f\Delta}}_{\text{distance, kept}}\;
+   \underbrace{e^{\,i\omega_f\delta}}_{\text{offset, averaged}}. $$
+
+<p>Only the offset factor depends on $\delta$, and it touches neither the key nor the
+center. So averaging over the offsets reaches only that factor, where it
+collapses into one complex weight per band:</p>
+
+$$ \tilde S(k) = \operatorname{Re}\Big\{ \sum_f \mathbb{E}[q_f]\,\overline{k_f}\,
+   e^{\,i\omega_f\Delta}\, \underbrace{\tfrac{1}{|D|}\sum_{\delta\in D} e^{\,i\omega_f\delta}}_{W_f}
+   \Big\} + S_{\mathrm{norm}}(k). $$
+
+<figure>
+  <img src="offset-average-Wf.png"
+       alt="Two panels of unit arrows on a circle averaging to a single green weight: high-frequency band cancels to a short weight, low-frequency band reinforces to a long one.">
+  <figcaption><span class="lab">The offset average is an average of rotations.</span>
+  Each offset $\delta$ contributes a unit arrow $e^{\,i\omega_f\delta}$ on the circle; their
+  average is the single weight $W_f$ (green). In a high-frequency band <span class="lab">(left)</span>
+  the offsets fan out and largely cancel, so $W_f$ is short; in a low-frequency band
+  <span class="lab">(right)</span> they cluster and reinforce, so $W_f$ is long. Either way
+  it is one number per band, computed once.</figcaption>
+</figure>
+
+<p>The weight $W_f = \frac{1}{|D|}\sum_{\delta\in D} e^{\,i\omega_f\delta}$ depends only on
+the fixed frequencies $\{\omega_f\}$ and the chosen offset set &mdash; whatever that set is;
+the powers of two are TriAttention's choice, not something the collapse relies on. It has
+nothing to do with any particular key. So it is computed once, offline, alongside the centers &mdash; and then the
+averaged score is a <em>single</em> evaluation of the original score, with the query center
+nudged to a precomputed &ldquo;offset-averaged center&rdquo; $\mu_f' = \mathbb{E}[q_f]\,W_f$:</p>
+
+<div class="callout">
+$$ \tilde S(k) = \sum_f \lVert \mu_f'\rVert\,\lVert k_f\rVert\,
+   \cos(\omega_f\Delta + \varphi_f') + S_{\mathrm{norm}}(k), \qquad
+   \mu_f' = \mathbb{E}[q_f]\,W_f, \quad \varphi_f' = \arg\mu_f' - \arg k_f. $$
+</div>
+
+<p>Because this is an exact rewrite of the average &mdash; not an approximation of it &mdash;
+every key receives precisely the score it had before, and the pruned set is unchanged. And
+nothing here forces complex arithmetic into the hot loop: the weight $W_f$ folds offline into
+the same real cosine/sine coefficients TriAttention already uses, as a fixed $2\times2$
+per-band map. The existing scorer runs unchanged on the pre-mapped coefficients. (The PDF
+works this out and reports a numerical check &mdash; the complex, polar, and real-coefficient
+forms all match the literal offset loop to machine precision.)</p>
+
+<h2>What it saves, and what it does not</h2>
+
+<p>For one pruning event over $N$ cached keys and $F$ bands, the trigonometric term drops
+from $O(N F\,|D|)$ band-cosine evaluations to $O(N F)$, plus a one-time offline cost of
+$O(F\,|D|)$ to build the weights. The reduction on that first term is an exact factor of
+$|D|$, the number of offsets in the schedule.</p>
+
+<p>I want to be plain about the size and place of this, because it is easy to oversell.
+The saving is in the <em>scoring arithmetic of the pruning step</em>, which TriAttention
+already runs only once per window of generated tokens. It is <em>not</em> a saving in the
+attention kernel that runs every token, nor in the cache budget, nor in how often pruning
+happens. It composes with the method's other engineering rather than replacing any of it.
+And it relies on the average being linear, so it applies to the published mean-aggregation
+default but <em>not</em> to a non-default variant that takes a maximum over offsets instead.</p>
+
+<blockquote>In short: a step that looked like it cost one evaluation per offset costs a
+single evaluation, paid for once, offline, without changing any output. A small, exact
+tightening of one bolt in their machine.</blockquote>
+
+<a class="paper-link" id="paper" href="https://github.com/amarnathm/projects/blob/master/papers/precomputing-the-future-offset-average.pdf">
+  <span class="k">Full note &middot; PDF</span>
+  <span class="t">Precomputing the Future-Offset Average in TriAttention</span>
+  <span class="m">Includes the lemma, proof, the real-coefficient $2\times2$ form, and the numerical check.</span>
+</a>
+
+<footer>
+  <span class="footer-mark">&copy; 2026 Hozhoke</span>
+</footer>
+
+</div>
+</body>
+</html>
