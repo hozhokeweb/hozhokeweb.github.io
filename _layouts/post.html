@@ -1,0 +1,19 @@
+---
+layout: default
+---
+<div class="wrap">
+
+<header>
+  <a class="wordmark" href="https://hozhoke.com">Hozhoke</a>
+  <h1>{{ page.title }}</h1>
+  <div class="byline">{{ page.author }} &middot; {{ page.date | date: "%B %Y" }}{% if page.pdf %} &middot; <a href="#paper">full note (PDF)</a>{% endif %}</div>
+  {% if page.lede %}<p class="lede">{{ page.lede }}</p>{% endif %}
+</header>
+
+{{ content }}
+
+<footer>
+  <span class="footer-mark">&copy; 2026 Hozhoke</span>
+</footer>
+
+</div>

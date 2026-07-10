@@ -1,0 +1,27 @@
+---
+layout: default
+title: Blog
+permalink: /blog/
+---
+<div class="wrap">
+
+<header>
+  <a class="wordmark" href="https://hozhoke.com">Hozhoke</a>
+  <h1>Blog</h1>
+</header>
+
+<ul class="post-list">
+{% for post in site.categories.research %}
+  <li>
+    <a class="post-title" href="{{ post.url | relative_url }}">{{ post.title }}</a>
+    <div class="post-meta">{{ post.date | date: "%B %-d, %Y" }}</div>
+    {% if post.lede %}<p class="post-excerpt">{{ post.lede }}</p>{% endif %}
+  </li>
+{% endfor %}
+</ul>
+
+<footer>
+  <span class="footer-mark">&copy; 2026 Hozhoke</span>
+</footer>
+
+</div>

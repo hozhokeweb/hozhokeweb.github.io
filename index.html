@@ -146,6 +146,9 @@
   }
 
   footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
     max-width: 620px;
     margin: 0 auto;
     width: 100%;
@@ -160,6 +163,18 @@
     letter-spacing: 0.1em;
     color: var(--faint);
   }
+
+  .footer-link {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-link:hover { color: var(--ink); }
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(10px); }
@@ -199,6 +214,7 @@
 
 <footer>
   <span class="footer-mark">&copy; 2026 Hozhoke</span>
+  <a class="footer-link" href="/blog/">Blog</a>
 </footer>
 
 <script>

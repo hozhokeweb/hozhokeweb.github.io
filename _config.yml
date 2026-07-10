@@ -1,0 +1,13 @@
+title: Hozhoke
+url: "https://hozhoke.com"
+
+# Posts keep their own explicit permalink (set in front matter), so the global
+# scheme is only a fallback.
+permalink: /blog/:title/
+
+# Files that are not part of the built site.
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - README.md
